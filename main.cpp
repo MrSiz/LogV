@@ -2,10 +2,12 @@
 #include "logcollector.h"
 #include "logconfig.h"
 #include "logprocessor.h"
+#include "logdatatable.h"
 
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QDebug>
+#include <QScopedPointer>
 
 int main(int argc, char *argv[])
 {
@@ -15,15 +17,25 @@ int main(int argc, char *argv[])
 //    LogCollector *logCollector = LogCollector::getLogCollector();
 //    logCollector->start(5000);
 
-//    qDebug() << "test LogConfig";
-//    LogConfig *logConfig = LogConfig::getLogConfig();
-//    logConfig->readConfig();
-//    qDebug() << "test end";
+    qDebug() << "test LogConfig";
+        LogConfig *logConfig = LogConfig::getLogConfig();
+    logConfig->readConfig();
+    qDebug() << "test end";
+
+
+    qDebug() << "test logDataTable";
+    LogDataTable logDataTable;
+    qDebug() << "test end";
+
 
     qDebug() << "test LogProcessor";
     LogProcessor *logProcessor = LogProcessor::getLogProcessor();
-    logProcessor->start("/home/mrsiz/my.txt");
+    logProcessor->start("/home/mrsiz/my.txt", logConfig, &logDataTable);
     qDebug() << "test end";
+
+
+    logDataTable.printData();
+
 
     MainWindow w;
     w.move((desk->width() - w.width()) / 2, (desk->height() - w.height()) / 2);

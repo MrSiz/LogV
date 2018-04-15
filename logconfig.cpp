@@ -18,14 +18,21 @@ LogConfig::LogConfig()
 
 }
 
-QVector<QString> LogConfig::getDetail() const
-{
-    return this->vec;
-}
+
 
 QString LogConfig::getDelimiter() const
 {
     return this->delimiter;
+}
+
+QList<QString> LogConfig::getDescriptionVec() const
+{
+    return this->des;
+}
+
+QList<int> LogConfig::getPositionVec() const
+{
+    return this->pos;
 }
 
 LogConfig *LogConfig::getLogConfig()
@@ -37,7 +44,7 @@ LogConfig *LogConfig::getLogConfig()
 void LogConfig::readConfig()
 {
     //read json file
-    QFile file("./conf/parse.json");
+    QFile file("../LogV/conf/parse.json");
     qDebug() << file.exists();
     file.open(QIODevice::ReadOnly);
     QByteArray rawData = file.readAll();
@@ -53,19 +60,20 @@ void LogConfig::readConfig()
 
     auto jsonArray1 = json["position"].toArray();
     auto jsonValue = jsonArray1.last();
-    auto vecLength = jsonValue.toInt();
-    vec.resize(vecLength + 1);
+//    auto vecLength = jsonValue.toInt();
+//    vec.resize(vecLength + 1);
 
     QJsonArray jsonArray2 = json["description"].toArray();
 
     auto jsonArrayLength = jsonArray1.size();
 
     for (auto i = 0; i < jsonArrayLength; ++i) {
-        auto pos = jsonArray1.at(i).toInt();
+        auto posTemp = jsonArray1.at(i).toInt();
         auto ele = jsonArray2.at(i).toString();
 
-        vec[pos] = ele;
-        qDebug() << pos << ' ' << ele;
+        pos.push_back(posTemp);
+        des.push_back(ele);
+        qDebug() << posTemp << ' ' << ele;
     }
 
 //    qDebug("%s", qPrintable(json["delimiter"].toString()));

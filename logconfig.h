@@ -1,7 +1,7 @@
 #ifndef LOGCONFIG_H
 #define LOGCONFIG_H
 #include <QString>
-#include <QVector>
+#include <QList>
 #include <QFile>
 
 class LogConfig
@@ -15,7 +15,8 @@ private:
 
 public:
     QString getDelimiter() const;
-    QVector<QString> getDetail() const;
+    QList<QString> getDescriptionVec() const;
+    QList<int> getPositionVec() const;
     static LogConfig *getLogConfig();
     void readConfig();
 
@@ -24,7 +25,10 @@ private:
 
 private:
     QString delimiter;
-    QVector<QString> vec;
+//    description
+    QList<QString> des;
+//    position of des
+    QList<int> pos;
 };
 
 #endif // LOGCONFIG_H

@@ -1,17 +1,26 @@
 #ifndef LOGDATATABLE_H
 #define LOGDATATABLE_H
 
-#include <QVector>
+#include <QList>
 #include <QString>
+#include <QQueue>
 
-using Table = QVector<QString>;
-using DataTable = QVector<Table>;
+using Table = QList<QString>;
+using DataTable = QQueue<Table>;
 
 class LogDataTable
 {
 public:
     ~LogDataTable() = default;
     LogDataTable();
+
+
+public:
+    void addData(const QList<QString> &list);
+    void removeData();
+//    Debug
+    void printData();
+
 private:
     DataTable dataTable;
 };
