@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -30,14 +31,19 @@ SOURCES += \
     logcollector.cpp \
     logconfig.cpp \
     logprocessor.cpp \
-    logdatatable.cpp
+    logdatatable.cpp \
+    mytesta.cpp \
+    logvisualwidget.cpp
 
 HEADERS += \
         mainwindow.h \
     logcollector.h \
     logconfig.h \
     logprocessor.h \
-    logdatatable.h
+    mytesta.h \
+    logdatatable.h \
+    logvisualwidget.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    logvisualwidget.ui
