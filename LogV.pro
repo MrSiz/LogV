@@ -55,3 +55,5 @@ FORMS += \
         mainwindow.ui \
     logvisualwidget.ui \
     logdataviewer.ui
+INCLUDEPATH += -I /usr/include/python2.7/
+LIBS += -L /usr/lib/python2.7 -lpython2.7
