@@ -9,9 +9,24 @@ MyTestA::MyTestA(QObject *parent) : QObject(parent)
 void MyTestA::recev(QVector<QString> a)
 {
     qDebug() << "receive";
-  qDebug() << a << endl;
+    qDebug() << a << endl;
+
 }
 
-//void MyTestA::prin(int a) {
-//    a = 1;
-//}
+void MyTestA::recv(Node &aa)
+{
+    qDebug() << "recevie NOde a";
+    aa.a = 2;
+}
+
+void MyTestA::kk()
+{
+    emit prin(this->a);
+}
+
+void MyTestA::print()
+{
+    qDebug() << this->a.a;
+}
+
+
