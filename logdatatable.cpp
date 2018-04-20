@@ -39,6 +39,13 @@ void LogDataTable::classifyData()
     }
 }
 
+void LogDataTable::isUpdate(bool update) const
+{
+//    if (update) {
+//        emit pleaseFillData();
+//    }
+}
+
 void LogDataTable::addData(const QList<QString> &list)
 {
     dataTable.push_back(list);

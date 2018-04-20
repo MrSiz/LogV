@@ -1,6 +1,7 @@
 #include "logcollector.h"
 #include <QTimer>
 #include <QProcess>
+#include <QDebug>
 
 LogCollector::LogCollector(QObject *parent) :
     QObject(parent),
@@ -11,6 +12,7 @@ LogCollector::LogCollector(QObject *parent) :
 
 LogCollector::~LogCollector()
 {
+    qDebug() << "LogCollector destructor called";
     timer->stop();
     delete timer;
 }

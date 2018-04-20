@@ -33,7 +33,9 @@ SOURCES += \
     logprocessor.cpp \
     logdatatable.cpp \
     mytesta.cpp \
-    logvisualwidget.cpp
+    logvisualwidget.cpp \
+    customtabstyle.cpp \
+    logdataviewer.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -42,8 +44,11 @@ HEADERS += \
     logprocessor.h \
     mytesta.h \
     logdatatable.h \
-    logvisualwidget.h
+    logvisualwidget.h \
+    customtabstyle.h \
+    logdataviewer.h
 
 FORMS += \
         mainwindow.ui \
-    logvisualwidget.ui
+    logvisualwidget.ui \
+    logdataviewer.ui

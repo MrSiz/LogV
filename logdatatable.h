@@ -19,10 +19,11 @@ public:
 
 signals:
     void pleaseDraw(QVector<QString> a);
+    void pleaseFillData(int row, int col, const QStringList &header, const QQueue<QList<QString>>& data);
 
 public slots:
     void classifyData();
-
+    void isUpdate(bool update) const;
 
 
 public:
@@ -31,8 +32,11 @@ public:
 //    Debug
     void printData();
 
+
+
 private:
     DataTable dataTable;
+
 };
 
 #endif // LOGDATATABLE_H
