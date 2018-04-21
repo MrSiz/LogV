@@ -28,10 +28,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    logconfig.cpp \
-    logprocessor.cpp \
-    logdatatable.cpp \
-    mytesta.cpp \
     logvisualwidget.cpp \
     customtabstyle.cpp \
     logdataviewer.cpp \
@@ -40,10 +36,6 @@ SOURCES += \
 
 HEADERS += \
         mainwindow.h \
-    logconfig.h \
-    logprocessor.h \
-    mytesta.h \
-    logdatatable.h \
     logvisualwidget.h \
     customtabstyle.h \
     logdataviewer.h \

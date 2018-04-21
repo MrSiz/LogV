@@ -1,6 +1,7 @@
 #include "logdataviewer.h"
 #include "ui_logdataviewer.h"
 
+
 #include <QDebug>
 #include <QTableWidget>
 
@@ -32,19 +33,22 @@ LogDataViewer::~LogDataViewer()
     delete ui;
 }
 
-void LogDataViewer::fillTableWidget(int row, int col, const QStringList &header, const QQueue<QList<QString>> &data)
+void LogDataViewer::fillTableWidget(int row, int col, const LogHeaders &header, const DataTable&  data)
 {
     tableWidget->clear();
-
+    qDebug() << "fill Table Widget enter";
 
     tableWidget->setRowCount(row);
     tableWidget->setColumnCount(col);
-
+    qDebug() << data.size();
     tableWidget->setHorizontalHeaderLabels(header);
     const QColor color = QColor("#EEDFCC");
     for (auto r = 0; r < row; ++r) {
+        qDebug() << data.at(r);
+        qDebug() << "====";
         for (auto c = 0; c < col; ++c) {
-            auto temp = new QTableWidgetItem(data.at(r).at(c));
+//           qDebug() << data.at(r).at(c);
+            auto temp = new QTableWidgetItem(data.at(row - r - 1).at(c));
             temp->setTextAlignment(Qt::AlignHCenter | Qt::AlignBottom);
             tableWidget->setItem(r, c, temp);
             if (r & 1) {
@@ -52,6 +56,7 @@ void LogDataViewer::fillTableWidget(int row, int col, const QStringList &header,
             }
         }
     }
+    qDebug() << "end fill viwer";
 //    tableWidget->verticalHeader()->resize(200, 10);
    tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 //    tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);

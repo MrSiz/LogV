@@ -1,8 +1,4 @@
 #include "mainwindow.h"
-#include "logconfig.h"
-#include "logprocessor.h"
-#include "logdatatable.h"
-#include "mytesta.h"
 #include "logvisualwidget.h"
 #include "logdataviewer.h"
 #include "downloader.h"
@@ -12,43 +8,12 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QDebug>
+#include <QThread>
 //#include <QtCharts/QChartView>
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     QDesktopWidget *desk = QApplication::desktop();
-
-//    LogCollector *logCollector = LogCollector::getLogCollector();
-//    logCollector->start(5000);
-
-//    qDebug() << "test LogConfig";
-//        LogConfig *logConfig = LogConfig::getLogConfig();
-//    logConfig->readConfig();
-//    qDebug() << "test end";
-
-
-//    qDebug() << "test logDataTable";
-//    LogDataTable logDataTable;
-//    qDebug() << "test end";
-
-
-//    qDebug() << "test LogProcessor";
-//    LogProcessor *logProcessor = LogProcessor::getLogProcessor();
-//    logProcessor->start("/home/mrsiz/my.txt", logConfig, &logDataTable);
-//    qDebug() << "test end";
-
-
-//   logDataTable.printData();
-//    QString tt = QString("tst");
-//    LogDataTable test(tt);
-//    MyTestA aa;
-
-//    QObject::connect(&test, SIGNAL(pleaseDraw(QVector<QString>)), &aa, SLOT(recev(QVector<QString>)));
-//    test.classifyData();
-
-//    MainWindow w;
-//    w.move((desk->width() - w.width()) / 2, (desk->height() - w.height()) / 2);
-//    w.show();
 
    LogVisualWidget *logVisualWidget = new LogVisualWidget;
 
@@ -66,19 +31,32 @@ int main(int argc, char *argv[])
     QQ.push_back(A);
     QQ.push_back(B);
 
+
+//    logDataViewer->fillTableWidget(2, 2, {"digit", "Alpha"}, QQ);
+
+
+
+    Downloader downloader;
+//    QThread downThread;
+//    downloader.QObject::moveToThread(&downThread);
+//    QObject::connect(&downThread, SIGNAL(started()),&downloader, SLOT(work()));
+//    downThread.start();
+
+    DataReader dataReader;
+    QObject::connect(&downloader, SIGNAL(update()), &dataReader, SLOT(getData()));
+
     LogDataViewer *logDataViewer = new LogDataViewer;
-    logDataViewer->fillTableWidget(2, 2, {"digit", "Alpha"}, QQ);
 
     MainWindow w(nullptr, logVisualWidget, logDataViewer);
+
+    QObject::connect(&dataReader, SIGNAL(send(int,int,LogHeaders,DataTable)), logDataViewer, SLOT(fillTableWidget(int,int,LogHeaders,DataTable)));
+    dataReader.initData();
+
     w.setMinimumHeight(700);
     w.setMinimumWidth(1000);
     w.move((desk->width() - w.width()) / 2, (desk->height() - w.height()) / 2);
 
     w.show();
-    Downloader downloader;
-    downloader.work();
-
-    DataReader dataReader;
-    QObject::connect(&downloader, SIGNAL(update()), &dataReader, SLOT(getData()));
+    qDebug() << "main thread id " << QThread::currentThreadId();
     return a.exec();
 }

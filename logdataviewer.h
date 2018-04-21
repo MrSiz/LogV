@@ -1,6 +1,9 @@
 #ifndef LOGDATAVIEWER_H
 #define LOGDATAVIEWER_H
 
+
+#include "own.h"
+
 #include <QWidget>
 //#include <QTableWidget>
 #include <QString>
@@ -22,7 +25,7 @@ public:
     ~LogDataViewer();
 
 public slots:
-    void fillTableWidget(int row, int col, const QStringList &header, const QQueue<QList<QString>>& data);
+    void fillTableWidget(int row, int col, const LogHeaders &header, const DataTable&  data);
 
 
 private:

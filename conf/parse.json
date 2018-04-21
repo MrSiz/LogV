@@ -5,5 +5,9 @@
 	],
 	"description" : [
 		"ip", "time", "request", "status", "body_bytes", "http_refer", "http_user_agent"
-	]
+	],
+	"analysis" : [
+		1,4,6,9
+	],
+	"log_path" : "/home/mrsiz/test.log"
 }

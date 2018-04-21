@@ -10,11 +10,13 @@ class Downloader : public QObject
     Q_OBJECT
 public:
     explicit Downloader(QObject *parent = nullptr);
-    void work();
+
+    ~Downloader();
 signals:
     void update() const;
 public slots:
     void download() const;
+    void work();
 private:
     QTimer *timer;
 };
