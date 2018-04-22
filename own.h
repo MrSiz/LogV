@@ -13,5 +13,5 @@ typedef QList<QString> OneColLog;
 typedef QQueue<OneRowLog> DataTable;
 typedef QStringList LogHeaders;
 typedef QList<int> LogValidPos;
-typedef QList<int> AnalysisItem;
+typedef QStringList AnalysisItem;
 #endif // OWN_H

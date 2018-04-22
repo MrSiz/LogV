@@ -3,7 +3,7 @@
 #include "logdataviewer.h"
 #include "downloader.h"
 #include "datareader.h"
-
+#include "visualcenter.h"
 
 #include <QApplication>
 #include <QDesktopWidget>
@@ -12,6 +12,8 @@
 //#include <QtCharts/QChartView>
 int main(int argc, char *argv[])
 {
+//    qDebug() << R"(\nsdrfw\n)";
+
     QApplication a(argc, argv);
     QDesktopWidget *desk = QApplication::desktop();
 
@@ -37,26 +39,27 @@ int main(int argc, char *argv[])
 
 
     Downloader downloader;
-//    QThread downThread;
-//    downloader.QObject::moveToThread(&downThread);
-//    QObject::connect(&downThread, SIGNAL(started()),&downloader, SLOT(work()));
-//    downThread.start();
-
     DataReader dataReader;
     QObject::connect(&downloader, SIGNAL(update()), &dataReader, SLOT(getData()));
 
     LogDataViewer *logDataViewer = new LogDataViewer;
-
-    MainWindow w(nullptr, logVisualWidget, logDataViewer);
+    VisualCenter *visualCenter = new VisualCenter;
+    visualCenter->init(8);
+//    visualCenter->show();
+    QObject::connect(&dataReader, SIGNAL(pieChart(QList<int>,QStringList,QString,int)), visualCenter,SLOT(drawpieChart(QList<int>,QStringList,QString,int)));
+    QObject::connect(&dataReader, SIGNAL(barChart(QList<int>,QStringList,QString,int)), visualCenter,SLOT(drawbarChart(QList<int>,QStringList,QString,int)));
+    QObject::connect(&dataReader, SIGNAL(lineChart(QList<int>,QStringList,QString,int)), visualCenter,SLOT(drawlineChart(QList<int>,QStringList,QString,int)));
+    MainWindow w(nullptr, visualCenter, logDataViewer);
 
     QObject::connect(&dataReader, SIGNAL(send(int,int,LogHeaders,DataTable)), logDataViewer, SLOT(fillTableWidget(int,int,LogHeaders,DataTable)));
     dataReader.initData();
 
-    w.setMinimumHeight(700);
-    w.setMinimumWidth(1000);
+    w.setMinimumHeight(850);
+    w.setMinimumWidth(1400);
     w.move((desk->width() - w.width()) / 2, (desk->height() - w.height()) / 2);
 
     w.show();
+
     qDebug() << "main thread id " << QThread::currentThreadId();
     return a.exec();
 }

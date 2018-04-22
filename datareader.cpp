@@ -7,6 +7,8 @@
 #include <QJsonObject>
 
 #include <algorithm>
+#include <QRegExp>
+#include <QMap>
 
 DataReader::DataReader(QObject *parent) :
     QObject(parent),
@@ -49,8 +51,8 @@ AnalysisItem DataReader::getAnaItemFromConfig()
     AnalysisItem temp;
 
     for (const auto &val : jsonArray) {
-        qDebug() << val.toInt();
-        temp << val.toInt();
+        qDebug() << val.toString();
+        temp << val.toString();
     }
     return temp;
 }
@@ -77,6 +79,118 @@ char DataReader::getDelimiter()
     auto json = doc.object();
     qDebug() << json["delimiter"].toString().at(0);
     return json["delimiter"].toString().at(0).unicode();
+}
+
+OneColLog DataReader::getColLog(int index) const
+{
+    auto row = data.size();
+    auto col = row == 0 ? 0 : data.at(0).size();
+    if (col < index) return OneColLog{};
+    OneColLog temp;
+
+    for (auto i = 0; i < row; ++i)
+        temp.push_back(data.at(i).at(index));
+    return temp;
+}
+
+void DataReader::process(const OneColLog &colLog, int g_pos)
+{
+    qDebug() << "Process the columLog";
+    auto len = colLog.size();
+    if (len == 0) {
+       return ;
+    }
+    auto temp = colLog[0];
+    QRegExp rx(R"(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)");
+    QRegExp httpStatus(R"(^[12345]\d{2}$)");
+    QRegExp date(R"(^\d{2}\/[a-zA-Z]{3}\/\d{4}:\d{2}:\d{2}:\d{2})");
+    if (rx.indexIn(temp) != -1) {
+        qDebug() << temp;
+        QMap<QString, int> m;
+
+        for (const auto &val : colLog) {
+            ++m[val];
+        }
+        QVector<QPair<QString, int>> vec;
+        for (auto it = m.begin(); it != m.end(); ++it) {
+
+            vec.push_back({it.key(), it.value()});
+        }
+        std::sort(vec.begin(), vec.end(), [](const QPair<QString, int> &a, const QPair<QString, int> &b) {
+            return a.second > b.second;
+        });
+        QStringList xnames;
+        QList<int> data;
+
+        auto num = std::min(6, vec.size());
+        for (auto i = 0; i < num; ++i) {
+            xnames.push_back(vec[i].first);
+            data.push_back(vec[i].second);
+        }
+
+        emit pieChart(data, xnames, "ip访问统计", g_pos);
+    }else if (httpStatus.indexIn(temp) != -1) {
+        qDebug() << temp;
+
+        QPair<QString, int> p1{"1xx", 0};
+        QPair<QString, int> p2{"2xx", 0};
+        QPair<QString, int> p3{"3xx", 0};
+        QPair<QString, int> p4{"4xx", 0};
+        QPair<QString, int> p5{"5xx", 0};
+
+        for (const auto &val : colLog) {
+//            qDebug() << val;
+            switch (val.at(0).unicode()) {
+            case '1':
+                ++p1.second;
+                break;
+            case '2':
+                ++p2.second;
+                break;
+            case '3':
+                ++p3.second;
+                break;
+            case '4':
+                ++p4.second;
+                break;
+            case '5':
+                ++p5.second;
+                break;
+            default:
+                break;
+
+            }
+        }
+
+        QList<int> data;
+        data << p1.second << p2.second << p3.second << p4.second << p5.second;
+        QStringList xnames;
+        xnames << p1.first << p2.first << p3.first << p4.first << p5.first;
+        qDebug() << "send signal draw status barchart";
+        emit barChart(data, xnames, "Http状态码统计", g_pos);
+    }else if (date.indexIn(temp) != -1) {
+        qDebug() << temp;
+
+        QMap<QString, int> m;
+
+        for (const auto &val : colLog) {
+            ++m[val.mid(0, 11)];
+        }
+
+        QStringList xnames;
+        QList<int> data;
+
+        for (auto it = m.begin(); it != m.end(); ++it) {
+            data.append(it.value());
+//            it.key().replace()
+            xnames.append(it.key());
+        }
+        qDebug() << data;
+        qDebug() << xnames;
+        emit lineChart(data, xnames, "最近访问数统计", g_pos);
+    }
+
+
 }
 
 LogHeaders DataReader::getHeadFromConfig()
@@ -121,6 +235,10 @@ void DataReader::getData()
         data.push_back(leftArg);
     }
     emit send(data.size(), descriptions.size(), descriptions, data);
+    process(getColLog(0), 0);
+    process(getColLog(3), 3);
+    process(getColLog(1), 1);
+
 }
 
 QList<QString> DataReader::spliteByteArray(const QByteArray &arr, const char &a)
@@ -179,7 +297,7 @@ void DataReader::initData()
          auto maxPos = *std::max_element(validPos.begin(), validPos.end());
         if (list.size() < maxPos)
             continue;
-        qDebug() << list;
+//        qDebug() << list;
         QList<QString> leftArg;
         for (const auto &t : validPos) {
 
@@ -188,8 +306,11 @@ void DataReader::initData()
 //        qDebug() << leftArg;
         data.push_back(leftArg);
         ++cnt;
-        qDebug() << cnt;
+//        qDebug() << cnt;
     }
     qDebug() << "will emit signals";
     emit send(data.size(), descriptions.size(), descriptions, data);
+    process(getColLog(0), 0);
+    process(getColLog(3), 3);
+    process(getColLog(1), 1);
 }

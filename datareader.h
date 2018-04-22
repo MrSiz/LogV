@@ -15,7 +15,9 @@ public:
     void initData();
 signals:
     void send(int row, int col, const LogHeaders &header, const DataTable& data);
-
+    void pieChart(QList<int> data, QStringList xnames, QString title, int g_pos);
+    void barChart(QList<int> data, QStringList xnames, QString title, int g_pos);
+    void lineChart(QList<int> data, QStringList xnames, QString title, int g_pos);
 public slots:
     void getData();
 
@@ -26,6 +28,9 @@ private:
     static AnalysisItem getAnaItemFromConfig();
     static QString getDataPath();
     static char getDelimiter();
+    OneColLog getColLog(int index) const;
+    void process(const OneColLog& colLog, int g_pos);
+
 private:
     DataTable data;
     LogHeaders descriptions;

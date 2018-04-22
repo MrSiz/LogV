@@ -32,7 +32,8 @@ SOURCES += \
     customtabstyle.cpp \
     logdataviewer.cpp \
     downloader.cpp \
-    datareader.cpp
+    datareader.cpp \
+    visualcenter.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -41,11 +42,14 @@ HEADERS += \
     logdataviewer.h \
     downloader.h \
     datareader.h \
-    own.h
+    own.h \
+    visualcenter.h
 
 FORMS += \
         mainwindow.ui \
     logvisualwidget.ui \
-    logdataviewer.ui
+    logdataviewer.ui \
+    form.ui \
+    visualcenter.ui
 INCLUDEPATH += -I /usr/include/python2.7/
 LIBS += -L /usr/lib/python2.7 -lpython2.7

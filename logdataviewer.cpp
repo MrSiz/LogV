@@ -40,12 +40,12 @@ void LogDataViewer::fillTableWidget(int row, int col, const LogHeaders &header, 
 
     tableWidget->setRowCount(row);
     tableWidget->setColumnCount(col);
-    qDebug() << data.size();
+//    qDebug() << data.size();
     tableWidget->setHorizontalHeaderLabels(header);
     const QColor color = QColor("#EEDFCC");
     for (auto r = 0; r < row; ++r) {
-        qDebug() << data.at(r);
-        qDebug() << "====";
+//        qDebug() << data.at(r);
+//        qDebug() << "====";
         for (auto c = 0; c < col; ++c) {
 //           qDebug() << data.at(r).at(c);
             auto temp = new QTableWidgetItem(data.at(row - r - 1).at(c));

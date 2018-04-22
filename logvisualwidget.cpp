@@ -31,14 +31,6 @@ LogVisualWidget::LogVisualWidget(QWidget *parent) :
 
 
     chart[0] = new QChart();
-//    QBarSeries *series1 = new QBarSeries;
-//    QBarSet *set1 = new QBarSet("zz");
-//    *set1 << 1 << 2;
-//    series1->append(set1);
-//    chart[0]->addSeries(series1);
-//    chart[0]->createDefaultAxes();
-//    chart[0]->legend()->setVisible(false);
-//    chart[0]->setAxisX(axis, series0);
 
     chartView = new QChartView(chart[0]);
     chartView->setRenderHint(QPainter::Antialiasing);
@@ -48,6 +40,8 @@ LogVisualWidget::LogVisualWidget(QWidget *parent) :
 //    chartView = new QChartView(chart0);
     chartView = new QChartView(chart0);
     chartView->setRenderHint(QPainter::Antialiasing);
+
+
     ui->gridLayout->addWidget(chartView, 1, 1);
 
     chart[2] = new QChart();
@@ -61,6 +55,8 @@ LogVisualWidget::LogVisualWidget(QWidget *parent) :
     chartView->setRenderHint(QPainter::Antialiasing);
     ui->gridLayout->addWidget(chartView, 2, 1);
 
+
+
 }
 
 LogVisualWidget::~LogVisualWidget()
@@ -72,7 +68,7 @@ void LogVisualWidget::drawBarChart(const QList<int> &data, const QStringList &xn
 {
     static QBarSeries *series = new QBarSeries();
     static QBarSet *set = new QBarSet("cnt");
-    static QBarCategoryAxis *xAxis = new QBarCategoryAxis();
+    static QBarCategoryAxis * xAxis= new QBarCategoryAxis();
     static QValueAxis *yAxis = new QValueAxis();
 
     auto maxValue = -1;
