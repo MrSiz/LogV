@@ -188,10 +188,51 @@ void DataReader::process(const OneColLog &colLog, int g_pos)
         qDebug() << data;
         qDebug() << xnames;
         emit lineChart(data, xnames, "最近访问数统计", g_pos);
+    }else if ([&colLog]() ->bool {
+//        bool flag = false;
+        for (const auto &ele : colLog) {
+            if (ele.contains("Mozilla", Qt::CaseInsensitive))
+                return true;
+        }
+         return false;
+    }()) {
+        qDebug() << "count user agent source";
+        QPair<QString, int> chrome{"Chrome", 0}, firefox{"Firefox", 0}, ie{"IE", 0},
+        safari{"Safari", 0}, opera{"Opera", 0}, others{"Others", 0};
+
+        for (const auto &ele : colLog) {
+            if (ele.contains("Chrome", Qt::CaseInsensitive)) {
+                ++chrome.second;
+            }else if (ele.contains("Firefox", Qt::CaseInsensitive)) {
+                ++firefox.second;
+            }else if (ele.contains("Opera", Qt::CaseInsensitive)) {
+                ++opera.second;
+            }else if (ele.contains("MSIE", Qt::CaseInsensitive)) {
+                ++ie.second;
+            }else if (ele.contains("SafaRi", Qt::CaseInsensitive)) {
+                ++safari.second;
+            }else {
+                ++others.second;
+            }
+        }
+        QVector<QPair<QString, int>> vec{chrome, firefox, ie,safari, opera, others};
+        std::sort(vec.begin(), vec.end(), [](const QPair<QString, int> &a, const QPair<QString, int> &b){return a.second > b.second;});
+
+
+        QStringList xnames;
+        QList<int> data;
+
+        auto num = vec.size();
+        qDebug() << vec;
+        for (auto i = 0; i < num; ++i) {
+            xnames.push_back(vec[i].first);
+            data.push_back(vec[i].second);
+        }
+        qDebug() << "will process browser";
+        emit barChart(data, xnames, "浏览器统计", g_pos);
     }
-
-
 }
+
 
 LogHeaders DataReader::getHeadFromConfig()
 {
@@ -238,6 +279,7 @@ void DataReader::getData()
     process(getColLog(0), 0);
     process(getColLog(3), 3);
     process(getColLog(1), 1);
+    process(getColLog(6), 2);
 
 }
 
@@ -313,4 +355,5 @@ void DataReader::initData()
     process(getColLog(0), 0);
     process(getColLog(3), 3);
     process(getColLog(1), 1);
+    process(getColLog(6), 2);
 }

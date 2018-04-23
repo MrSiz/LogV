@@ -27,6 +27,7 @@ private:
     QChartView *chartView;
     QList<QChart*> chartList;
     QList<QAbstractSeries*> series;
+    QList<QBarSet*> barSet;
 };
 
 #endif // VISUALCENTER_H

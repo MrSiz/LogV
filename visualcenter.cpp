@@ -35,6 +35,7 @@ void VisualCenter::init(int num)
                 qDebug() << index;
                 chartList.push_back(new QChart());
                 series.push_back(nullptr);
+                barSet.push_back(new QBarSet(""));
                 chartView = new QChartView(chartList.at(index));
                 chartView->setRenderHint(QPainter::Antialiasing);
 //                chartView->resize(1000, 1000);
@@ -46,6 +47,7 @@ void VisualCenter::init(int num)
         this->ui->gridLayout->setRowMinimumHeight(row, 400);
         chartList.push_back(new QChart());
         series.push_back(nullptr);
+        barSet.push_back(new QBarSet(""));
         chartView = new QChartView(chartList.at(index));
         chartView->setRenderHint(QPainter::Antialiasing);
         this->ui->gridLayout->addWidget(chartView, row, 0);
@@ -59,6 +61,7 @@ void VisualCenter::init(int num)
                 qDebug() << index;
                 chartList.push_back(new QChart());
                 series.push_back(nullptr);
+                barSet.push_back(new QBarSet(""));
                 chartView = new QChartView(chartList.at(index));
                 chartView->setRenderHint(QPainter::Antialiasing);
                 this->ui->gridLayout->addWidget(chartView, i, j);
@@ -93,37 +96,51 @@ void VisualCenter::drawbarChart(QList<int> data, QStringList xnames, QString tit
     if (series[g_pos] == nullptr) {
         series[g_pos] = new QBarSeries;
     }
-    static QBarSet barSet{"count"};
-
-    auto setCnt = barSet.count();
-    while (barSet.count() != 0) {
-        barSet.remove(0);
+//    static QBarSet barSet{"count"};
+//    auto setCnt = barSet[g_pos].count();
+    while (barSet[g_pos]->count() != 0) {
+        barSet[g_pos]->remove(0);
     }
-    qDebug() << barSet.count();
+    qDebug() << barSet[g_pos]->count();
     auto len = data.length();
     int max_val = -1;
     for (auto i = 0; i < len; ++i) {
 //        qDebug() << data.at(i);
-        barSet << data.at(i);
+        *(barSet[g_pos]) << data.at(i);
         if (max_val < data.at(i))
             max_val = data.at(i);
     }
 
     if (static_cast<QBarSeries*>(series[g_pos])->count() == 0) {
-        static_cast<QBarSeries*>(series[g_pos])->append(&barSet);
+        qDebug() << title;
+        static_cast<QBarSeries*>(series[g_pos])->append(barSet[g_pos]);
         chartList[g_pos]->setTitle(title);
         chartList[g_pos]->addSeries(series[g_pos]);
+//        for (int i = 0; i < barSet.count(); ++i) {
+//            qDebug() << barSet.at(i);
+//        }
         chartList[g_pos]->createDefaultAxes();
 
-        static QBarCategoryAxis xAxis;
-        xAxis.append(xnames);
-        chartList[g_pos]->setAxisX(&xAxis, series[g_pos]);
+//        static QBarCategoryAxis xAxis();
+//        xAxis.append(xnames);
+//        chartList[g_pos]->setAxisX(&xAxis, series[g_pos]);
 
-        static QValueAxis yAxis;
-        yAxis.setLabelFormat("%d");
-        yAxis.setRange(0, max_val + 5);
+//        static QValueAxis yAxis;
+//        yAxis.setLabelFormat("%d");
+//        yAxis.setRange(0, max_val + 5);
 
-        chartList[g_pos]->setAxisY(&yAxis);
+//        chartList[g_pos]->setAxisY(&yAxis);
+
+        QBarCategoryAxis *xAxis = new QBarCategoryAxis(this);
+        xAxis->append(xnames);
+        chartList[g_pos]->setAxisX(xAxis, series[g_pos]);
+
+        QValueAxis *yAxis = new QValueAxis(this);
+        yAxis->setLabelFormat("%d");
+        yAxis->setRange(0, max_val + 5);
+
+        chartList[g_pos]->setAxisY(yAxis);
+
         chartList[g_pos]->legend()->setVisible(false);
 
     }
