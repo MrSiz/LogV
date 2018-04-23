@@ -7,7 +7,7 @@
 		"ip", "time", "request", "status", "body_bytes", "http_refer", "http_user_agent"
 	],
 	"analysis" : [
-		"ip","time","request","status", "http_user_agent"
+		"ip","time","status", "http_user_agent"
 	],
 	"log_path" : "/home/mrsiz/test.log"
 }

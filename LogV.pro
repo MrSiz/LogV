@@ -28,7 +28,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    logvisualwidget.cpp \
     customtabstyle.cpp \
     logdataviewer.cpp \
     downloader.cpp \
@@ -37,7 +36,6 @@ SOURCES += \
 
 HEADERS += \
         mainwindow.h \
-    logvisualwidget.h \
     customtabstyle.h \
     logdataviewer.h \
     downloader.h \

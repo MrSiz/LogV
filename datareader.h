@@ -13,7 +13,9 @@ public:
 
 
     void initData();
+    int getAnalysisNum() const;
 signals:
+//    void numOfGraph(int n);
     void send(int row, int col, const LogHeaders &header, const DataTable& data);
     void pieChart(QList<int> data, QStringList xnames, QString title, int g_pos);
     void barChart(QList<int> data, QStringList xnames, QString title, int g_pos);
@@ -36,6 +38,7 @@ private:
     LogHeaders descriptions;
     LogValidPos validPos;
     AnalysisItem analysisItem;
+//    int graphNum;
     QString dataPath;
     char delimiter;
 };

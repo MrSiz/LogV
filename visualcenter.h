@@ -17,8 +17,9 @@ class VisualCenter : public QWidget
 public:
     explicit VisualCenter(QWidget *parent = 0);
     ~VisualCenter();
-public slots:
     void init(int num);
+public slots:
+
     void drawpieChart(QList<int> data, QStringList xnames, QString title, int g_pos);
     void drawbarChart(QList<int> data, QStringList xnames, QString title, int g_pos);
     void drawlineChart(QList<int> data, QStringList xnames, QString title, int g_pos);

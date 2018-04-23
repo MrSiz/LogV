@@ -18,7 +18,7 @@ DataReader::DataReader(QObject *parent) :
     dataPath(getDataPath()),
     delimiter(getDelimiter())
 {
-//    initData();
+//    emit(analysisItem.size());
 }
 
 LogValidPos DataReader::getPosFromConfig()
@@ -356,4 +356,9 @@ void DataReader::initData()
     process(getColLog(3), 3);
     process(getColLog(1), 1);
     process(getColLog(6), 2);
+}
+
+int DataReader::getAnalysisNum() const
+{
+    return analysisItem.size();
 }
