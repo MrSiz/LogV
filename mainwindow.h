@@ -16,7 +16,7 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
-    explicit MainWindow(QWidget *parent, QWidget *w1, QWidget *w2);
+    explicit MainWindow(QWidget *parent, QWidget *w1, QWidget *w2, QWidget *w3);
     ~MainWindow();
 
 private:

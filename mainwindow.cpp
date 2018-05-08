@@ -29,31 +29,25 @@ MainWindow::MainWindow(QWidget *parent) :
     QHBoxLayout *hBoxLayout = new QHBoxLayout;
 
     hBoxLayout->addWidget(tabWidget);
-
-//    this->setLayout(hBoxLayout);
     ui->centralWidget->setLayout(hBoxLayout);
 }
 
-MainWindow::MainWindow(QWidget *parent, QWidget *w1, QWidget *w2) :
+MainWindow::MainWindow(QWidget *parent, QWidget *w1, QWidget *w2, QWidget *w3) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    qDebug() << "will error?";
     ui->setupUi(this);
-    qDebug() << "this constructor called";
 
     tabWidget = new QTabWidget;
-//    w2 = new QWidget;
 
-//    QLabel *lable2 = new QLabel(tr("2"), w2);
+    tabWidget->addTab(w1, tr("数据"));
+    tabWidget->addTab(w2, tr("单列可视化"));
+    tabWidget->addTab(w3, tr("关联可视化"));
 
-    tabWidget->addTab(w2, tr("数据"));
-    tabWidget->addTab(w1, tr("可视化"));
     tabWidget->setTabPosition(QTabWidget::West);
     tabWidget->tabBar()->setStyle(new CustomTabStyle);
 
     QHBoxLayout *hBoxLayout = new QHBoxLayout;
-
     hBoxLayout->addWidget(tabWidget);
 
     ui->centralWidget->setLayout(hBoxLayout);

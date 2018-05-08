@@ -233,6 +233,186 @@ void DataReader::process(const OneColLog &colLog, int g_pos)
     }
 }
 
+void DataReader::TwoDprocess(const OneColLog &log1, const OneColLog &log2, int g_pos)
+{
+//处理时间与HTTP Method的关系
+
+    QMap<int, int> get, head, post, put, del, trace;
+    auto len = log1.size();
+
+    for (int i = 0; i < len; ++i) {
+        int duration = (log1[i].at(12).unicode() - '0') * 10 + log1[i].at(13).unicode() - '0';
+        qDebug() << duration;
+        if (log2[i].contains("GET")) {
+            ++get[duration];
+        }else if (log2[i].contains("POST")){
+            ++post[duration];
+        }else if (log2[i].contains("HEAD")) {
+            ++head[duration];
+        }else if (log2[i].contains("PUT")) {
+            ++put[duration];
+        }else if (log2[i].contains("DELETE")) {
+            ++del[duration];
+        }else if (log2[i].contains("TRACE")) {
+            ++trace[duration];
+        }
+    }
+    qDebug() << "httpMethodAndTImeChart";
+    emit httpMethodAndTimeChart(get, head, post, put, del, trace);
+}
+
+void DataReader::processIpAndHttpRequest(const OneColLog &ip, const OneColLog &request)
+{
+//    QStringList names;
+
+    QMap<QString, QMap<QString, int>> m;
+
+    auto len = ip.size();
+    QMap<QString, int> cnt;
+
+    for (const auto &val : ip) {
+        ++cnt[val];
+    }
+    QVector<QPair<QString, int>> vec;
+    for ( auto it = cnt.begin(); it != cnt.end(); ++it) {
+        vec.push_back(QPair<QString, int>(it.key(), it.value()));
+    }
+    std::sort(vec.begin(), vec.end(), [](const QPair<QString, int> &a, const QPair<QString, int> &b) {
+        return a.second > b.second;
+    });
+    int min_val = std::min(5, vec.size());
+    QMap<QString, bool> m_ip;
+    for (auto i = 0; i < min_val; ++i) {
+        m_ip[vec[i].first] = true;
+    }
+    for (auto i = 0; i < len; ++i) {
+        if (m_ip[ip.at(i)] == false) continue;
+        if (request[i].contains("GET")) {
+            ++m[ip.at(i)]["Get"];
+        }else if (request[i].contains("POST")){
+            ++m[ip.at(i)]["Post"];
+        }else if (request[i].contains("HEAD")) {
+            ++m[ip.at(i)]["Head"];
+        }else if (request[i].contains("PUT")) {
+            ++m[ip.at(i)]["Put"];
+        }else if (request[i].contains("DELETE")) {
+            ++m[ip.at(i)]["Delete"];
+        }else if (request[i].contains("TRACE")) {
+            ++m[ip.at(i)]["Trace"];
+        }
+    }
+    emit ipAndHttpReq(m);
+}
+
+void DataReader::processBrowserIpStatus(const OneColLog &browser, const OneColLog &ip,const OneColLog &status)
+{
+    QMap<QString, int> browser_cnt;
+    QMap<QString, QMap<QString, int>> ip_cnt;
+    QMap<QString, QMap<QString, QMap<QString, int>>> status_cnt;
+
+    auto len = browser.length();
+
+    for (auto i = 0; i < len; ++i) {
+        const auto &ele = browser[i];
+        const auto &tempIp = ip[i];
+        const auto &tempS = status[i];
+        if (ele.contains("Chrome", Qt::CaseInsensitive)) {
+            ++browser_cnt[tr("Chrome")];
+            ++ip_cnt[tr("Chrome")][tempIp];
+            ++status_cnt[tr("Chrome")][tempIp][tempS];
+
+        }else if (ele.contains("Firefox", Qt::CaseInsensitive)) {
+           ++browser_cnt[tr("Firefox")];
+            ++ip_cnt[tr("Firefox")][tempIp];
+           ++status_cnt[tr("Firefox")][tempIp][tempS];
+        }else if (ele.contains("Opera", Qt::CaseInsensitive)) {
+           ++browser_cnt[tr("Opera")];
+           ++ip_cnt[tr("Opera")][tempIp];
+           ++status_cnt[tr("Opera")][tempIp][tempS];
+        }else if (ele.contains("MSIE", Qt::CaseInsensitive)) {
+           ++browser_cnt[tr("IE")];
+            ++ip_cnt[tr("IE")][tempIp];
+           ++status_cnt[tr("IE")][tempIp][tempS];
+        }else if (ele.contains("SafaRi", Qt::CaseInsensitive)) {
+           ++browser_cnt[tr("Safari")];
+           ++ip_cnt[tr("Safari")][tempIp];
+           ++status_cnt[tr("Safari")][tempIp][tempS];
+        }else {
+            ++browser_cnt[tr("Other")];
+            ++ip_cnt[tr("Other")][tempIp];
+            ++status_cnt[tr("Other")][tempIp][tempS];
+        }
+    }
+
+    qDebug() << "go to draw complex pid chart";
+    emit browserIpStatus(browser_cnt, ip_cnt, status_cnt);
+}
+
+void DataReader::processIpAndOs(const OneColLog &ip, const OneColLog &userAgent)
+{
+    int len = ip.size();
+    QMap<QString, QMap<QString, bool> > exitIp;
+    QMap<QString, int> visitors;
+    QMap<QString, int> hits;
+
+    for (int i = 0; i < len; ++i) {
+        if (userAgent[i].contains("Windows", Qt::CaseInsensitive)) {
+            if (exitIp["Windows"][ip[i]] == 0)
+            {
+                exitIp["Windows"][ip[i]] = 1;
+                ++visitors["Windows"];
+                ++hits["Windows"];
+            }else {
+                ++hits["Windows"];
+            }
+        }else if (userAgent[i].contains("Linux", Qt::CaseInsensitive)) {
+            if (exitIp["Linux"][ip[i]] == 0) {
+                exitIp["Linux"][ip[i]] = 1;
+                ++visitors["Linux"];
+                ++hits["Linux"];
+            }else {
+                ++hits["Linux"];
+            }
+        }else if (userAgent[i].contains("Android", Qt::CaseInsensitive)) {
+            if (exitIp["Android"][ip[i]] == 0) {
+                exitIp["Android"][ip[i]] = 1;
+                ++visitors["Android"];
+                ++hits["Android"];
+            }else {
+                ++hits["Android"];
+            }
+        }else if (userAgent[i].contains("Macintosh", Qt::CaseInsensitive)) {
+            if (exitIp["Macintosh"][ip[i]] == 0) {
+                exitIp["Macintosh"][ip[i]] = 1;
+                ++visitors["Macintosh"];
+                ++hits["Macintosh"];
+            }else {
+                ++hits["Macintosh"];
+            }
+        }else if (userAgent[i].contains("Iphone", Qt::CaseInsensitive) || userAgent[i].contains("Ipad", Qt::CaseInsensitive)) {
+            if (exitIp["Ios"][ip[i]] == 0) {
+                exitIp["Ios"][ip[i]] = 1;
+                ++visitors["Ios"];
+                ++hits["Ios"];
+            }else {
+                ++hits["Ios"];
+            }
+        }else {
+            if (exitIp["Unknown"][ip[i]] == 0) {
+                exitIp["Unknown"][ip[i]] = 1;
+                ++visitors["Unknown"];
+                ++hits["Unknown"];
+            }else {
+                ++hits["Unknown"];
+            }
+        }
+    }
+    QStringList head;
+    head << "Windows" << "Linux" << "Android" << "Macintosh" << "Ios" << "Unknown";
+    qDebug() << "please draw ip and os";
+    emit ipAndOs(visitors, hits, head);
+}
+
 
 LogHeaders DataReader::getHeadFromConfig()
 {
@@ -280,7 +460,10 @@ void DataReader::getData()
     process(getColLog(3), 3);
     process(getColLog(1), 1);
     process(getColLog(6), 2);
-
+    TwoDprocess(getColLog(1), getColLog(2), 0);
+    processIpAndHttpRequest(getColLog(0), getColLog(2));
+    processBrowserIpStatus(getColLog(6), getColLog(0), getColLog(3));
+    processIpAndOs(getColLog(0), getColLog(6));
 }
 
 QList<QString> DataReader::spliteByteArray(const QByteArray &arr, const char &a)
@@ -356,6 +539,7 @@ void DataReader::initData()
     process(getColLog(3), 3);
     process(getColLog(1), 1);
     process(getColLog(6), 2);
+    TwoDprocess(getColLog(1), getColLog(2), 0);
 }
 
 int DataReader::getAnalysisNum() const
