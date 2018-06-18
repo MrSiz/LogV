@@ -18,8 +18,8 @@ MainWindow::MainWindow(QWidget *parent) :
     w1 = new QWidget;
     w2 = new QWidget;
 
-    QLabel *label1 = new QLabel(tr("1"), w1);
-    QLabel *lable2 = new QLabel(tr("2"), w2);
+//    QLabel *label1 = new QLabel(tr("1"), w1);
+//    QLabel *lable2 = new QLabel(tr("2"), w2);
 
     tabWidget->addTab(w1, tr("test1"));
     tabWidget->addTab(w2, tr("test2"));

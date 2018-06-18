@@ -28,6 +28,9 @@ public slots:
     void fillTableWidget(int row, int col, const LogHeaders &header, const DataTable&  data);
 
 
+private slots:
+    void on_lineEdit_editingFinished();
+
 private:
     Ui::LogDataViewer *ui;
     QTableWidget *tableWidget;

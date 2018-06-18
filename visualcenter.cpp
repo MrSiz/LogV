@@ -2,7 +2,8 @@
 #include "ui_visualcenter.h"
 
 #include <QDateTime>
-VisualCenter::VisualCenter(QWidget *parent) :
+VisualCenter::VisualCenter(int numThread, QWidget *parent) :
+    pool(numThread),
     QWidget(parent),
     ui(new Ui::VisualCenter)
 {
@@ -146,6 +147,7 @@ void VisualCenter::drawlineChart(QList<int> data, QStringList xnames, QString ti
     static_cast<QLineSeries*>(series[g_pos])->clear();
     auto len = data.size();
     int max_val = -1;
+    qDebug() << "len " << len;
     for (int i = 0; i < len; ++i) {
         QDateTime valid = QLocale("en-Us").toDateTime(xnames[i].simplified(), "d/MMM/yyyy");
         if (max_val < data[i])
@@ -373,18 +375,20 @@ void VisualCenter::drawipAndHttpReq(QMap<QString, QMap<QString, int> > store)
 
 }
 
-void VisualCenter::drawbrowserIpStatus(QMap<QString, int> browser, QMap<QString, QMap<QString, int> > ip, QMap<QString, QMap<QString, QMap<QString, int> > > status)
+//static QPieSeries s0, s1, s2;
+
+void VisualCenter::drawbrowserIpStatus(QHash<QString, int> browser, QHash<QString, QHash<QString, int> > ip, QHash<QString, QHash<QString, QHash<QString, int> > > status)
 {
     qDebug() << "draw complex pie";
 
     static QPieSeries *series0 = new QPieSeries;
     static QPieSeries *series1 = new QPieSeries;
     static QPieSeries *series2 = new QPieSeries;
+
+    static bool flag = false;
     series0->clear();
     series1->clear();
     series2->clear();
-
-    static bool flag = false;
 
     for (auto i = browser.begin(); i !=browser.end(); ++i) {
         auto &val1 = i.key();
@@ -392,16 +396,18 @@ void VisualCenter::drawbrowserIpStatus(QMap<QString, int> browser, QMap<QString,
             auto &val2 = j.key();
             auto kk = status[val1][val2];
             for (auto k = kk.begin(); k != kk.end(); ++k) {
-                series2->append(k.key(), k.value());
+                series2->append(k.key(),k.value());
             }
             series1->append(j.key(), j.value());
         }
         series0->append(i.key(), i.value());
     }
     series0->setLabelsVisible(true);
+
+
     if (flag == false) {
 
-//        series2->setLabelsVisible(true);
+
 
         series0->setHoleSize(0.2);
         series1->setHoleSize(0.4);
@@ -409,6 +415,7 @@ void VisualCenter::drawbrowserIpStatus(QMap<QString, int> browser, QMap<QString,
         chartList[2]->addSeries(series0);
         chartList[2]->addSeries(series1);
         chartList[2]->addSeries(series2);
+
 
         chartList[2]->createDefaultAxes();
         chartList[2]->setAnimationOptions(QChart::AllAnimations);
@@ -464,4 +471,49 @@ void VisualCenter::drawipAndOs(QMap<QString, int> visitors, QMap<QString, int> h
         flag = true;
     }
 
+}
+
+void VisualCenter::recevieSeries( QList<QPair<QString, qreal>> s0,  QList<QPair<QString, qreal>> s1, QList<QPair<QString, qreal>> s2)
+{
+    static QPieSeries *series0 = new QPieSeries;
+    static QPieSeries *series1 = new QPieSeries;
+    static QPieSeries *series2 = new QPieSeries;
+
+    static bool flag = false;
+    series0->clear();
+    series1->clear();
+    series2->clear();
+
+//    while (s0.count()) {
+//        series1->append(s0.)
+//    }
+    int l0 = s0.size(), l1 = s1.size(), l2 = s2.size();
+    for (int i = 0; i < l0; ++i) {
+        series0->append(s0[i].first, s0[i].second);
+    }
+    for (int i = 0; i < l1; ++i) {
+        series1->append(s1[i].first, s1[i].second);
+    }
+    for (int i = 0; i < l2; ++i) {
+        series2->append(s2[i].first, s2[i].second);
+    }
+    series0->setLabelsVisible(true);
+    if (flag == false) {
+
+
+
+        series0->setHoleSize(0.2);
+        series1->setHoleSize(0.4);
+        series2->setHoleSize(0.6);
+        chartList[2]->addSeries(series0);
+        chartList[2]->addSeries(series1);
+        chartList[2]->addSeries(series2);
+
+
+        chartList[2]->createDefaultAxes();
+        chartList[2]->setAnimationOptions(QChart::AllAnimations);
+        chartList[2]->legend()->setVisible(false);
+        chartList[2]->setTitle("浏览器关联统计");
+        flag = true;
+    }
 }

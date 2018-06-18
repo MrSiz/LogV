@@ -19,6 +19,7 @@ public slots:
     void work();
 private:
     QTimer *timer;
+    QThread *downThread;
 };
 
 #endif // DOWNLOADER_H

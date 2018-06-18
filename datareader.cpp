@@ -9,8 +9,10 @@
 #include <algorithm>
 #include <QRegExp>
 #include <QMap>
+#include <QThread>
 
-DataReader::DataReader(QObject *parent) :
+DataReader::DataReader(int numThread, QObject *parent) :
+    pool(numThread),
     QObject(parent),
     descriptions(getHeadFromConfig()),
     validPos(getPosFromConfig()),
@@ -95,147 +97,160 @@ OneColLog DataReader::getColLog(int index) const
 
 void DataReader::process(const OneColLog &colLog, int g_pos)
 {
-    qDebug() << "Process the columLog";
-    auto len = colLog.size();
-    if (len == 0) {
-       return ;
-    }
-    auto temp = colLog[0];
-    QRegExp rx(R"(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)");
-    QRegExp httpStatus(R"(^[12345]\d{2}$)");
-    QRegExp date(R"(^\d{2}\/[a-zA-Z]{3}\/\d{4}:\d{2}:\d{2}:\d{2})");
-    if (rx.indexIn(temp) != -1) {
-        qDebug() << temp;
-        QMap<QString, int> m;
-
-        for (const auto &val : colLog) {
-            ++m[val];
+    qDebug() << "use ist";
+        qDebug() << "Process the columLog";
+        auto len = colLog.size();
+        if (len == 0) {
+           return ;
         }
-        QVector<QPair<QString, int>> vec;
-        for (auto it = m.begin(); it != m.end(); ++it) {
+        auto temp = colLog[0];
+        QRegExp rx(R"(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)");
+        QRegExp httpStatus(R"(^[12345]\d{2}$)");
+        QRegExp date(R"(^\d{2}\/[a-zA-Z]{3}\/\d{4}:\d{2}:\d{2}:\d{2})");
+        if (rx.indexIn(temp) != -1) {
+            auto result = pool.enqueue([=]()->std::tuple<QList<int>, QStringList>{
+            QMap<QString, int> m;
 
-            vec.push_back({it.key(), it.value()});
-        }
-        std::sort(vec.begin(), vec.end(), [](const QPair<QString, int> &a, const QPair<QString, int> &b) {
-            return a.second > b.second;
-        });
-        QStringList xnames;
-        QList<int> data;
-
-        auto num = std::min(6, vec.size());
-        for (auto i = 0; i < num; ++i) {
-            xnames.push_back(vec[i].first);
-            data.push_back(vec[i].second);
-        }
-
-        emit pieChart(data, xnames, "ip访问统计", g_pos);
-    }else if (httpStatus.indexIn(temp) != -1) {
-        qDebug() << temp;
-
-        QPair<QString, int> p1{"1xx", 0};
-        QPair<QString, int> p2{"2xx", 0};
-        QPair<QString, int> p3{"3xx", 0};
-        QPair<QString, int> p4{"4xx", 0};
-        QPair<QString, int> p5{"5xx", 0};
-
-        for (const auto &val : colLog) {
-//            qDebug() << val;
-            switch (val.at(0).unicode()) {
-            case '1':
-                ++p1.second;
-                break;
-            case '2':
-                ++p2.second;
-                break;
-            case '3':
-                ++p3.second;
-                break;
-            case '4':
-                ++p4.second;
-                break;
-            case '5':
-                ++p5.second;
-                break;
-            default:
-                break;
-
+            for (const auto &val : colLog) {
+                ++m[val];
             }
-        }
+            QVector<QPair<QString, int>> vec;
+            for (auto it = m.begin(); it != m.end(); ++it) {
 
-        QList<int> data;
-        data << p1.second << p2.second << p3.second << p4.second << p5.second;
-        QStringList xnames;
-        xnames << p1.first << p2.first << p3.first << p4.first << p5.first;
-        qDebug() << "send signal draw status barchart";
-        emit barChart(data, xnames, "Http状态码统计", g_pos);
-    }else if (date.indexIn(temp) != -1) {
-        qDebug() << temp;
-
-        QMap<QString, int> m;
-
-        for (const auto &val : colLog) {
-            ++m[val.mid(0, 11)];
-        }
-
-        QStringList xnames;
-        QList<int> data;
-
-        for (auto it = m.begin(); it != m.end(); ++it) {
-            data.append(it.value());
-//            it.key().replace()
-            xnames.append(it.key());
-        }
-        qDebug() << data;
-        qDebug() << xnames;
-        emit lineChart(data, xnames, "最近访问数统计", g_pos);
-    }else if ([&colLog]() ->bool {
-//        bool flag = false;
-        for (const auto &ele : colLog) {
-            if (ele.contains("Mozilla", Qt::CaseInsensitive))
-                return true;
-        }
-         return false;
-    }()) {
-        qDebug() << "count user agent source";
-        QPair<QString, int> chrome{"Chrome", 0}, firefox{"Firefox", 0}, ie{"IE", 0},
-        safari{"Safari", 0}, opera{"Opera", 0}, others{"Others", 0};
-
-        for (const auto &ele : colLog) {
-            if (ele.contains("Chrome", Qt::CaseInsensitive)) {
-                ++chrome.second;
-            }else if (ele.contains("Firefox", Qt::CaseInsensitive)) {
-                ++firefox.second;
-            }else if (ele.contains("Opera", Qt::CaseInsensitive)) {
-                ++opera.second;
-            }else if (ele.contains("MSIE", Qt::CaseInsensitive)) {
-                ++ie.second;
-            }else if (ele.contains("SafaRi", Qt::CaseInsensitive)) {
-                ++safari.second;
-            }else {
-                ++others.second;
+                vec.push_back({it.key(), it.value()});
             }
+            std::sort(vec.begin(), vec.end(), [](const QPair<QString, int> &a, const QPair<QString, int> &b) {
+                return a.second > b.second;
+            });
+            QStringList xnames;
+            QList<int> data;
+
+            auto num = std::min(6, vec.size());
+            for (auto i = 0; i < num; ++i) {
+                xnames.push_back(vec[i].first);
+                data.push_back(vec[i].second);
+            }
+            return std::make_tuple(data, xnames);
+            });
+            QStringList xnames;
+            QList<int> data;
+            std::tie(data, xnames) = result.get();
+            emit pieChart(data, xnames, "ip访问统计", g_pos);
+        }else if (httpStatus.indexIn(temp) != -1) {
+            qDebug() << temp;
+            auto result = pool.enqueue([=]()->std::tuple<QList<int> , QStringList>{
+            QPair<QString, int> p1{"1xx", 0};
+            QPair<QString, int> p2{"2xx", 0};
+            QPair<QString, int> p3{"3xx", 0};
+            QPair<QString, int> p4{"4xx", 0};
+            QPair<QString, int> p5{"5xx", 0};
+
+            for (const auto &val : colLog) {
+    //            qDebug() << val;
+                switch (val.at(0).unicode()) {
+                case '1':
+                    ++p1.second;
+                    break;
+                case '2':
+                    ++p2.second;
+                    break;
+                case '3':
+                    ++p3.second;
+                    break;
+                case '4':
+                    ++p4.second;
+                    break;
+                case '5':
+                    ++p5.second;
+                    break;
+                default:
+                    break;
+
+                }
+            }
+
+            QList<int> data;
+            data << p1.second << p2.second << p3.second << p4.second << p5.second;
+            QStringList xnames;
+            xnames << p1.first << p2.first << p3.first << p4.first << p5.first;
+            qDebug() << "send signal draw status barchart";
+
+            return std::make_tuple(data, xnames);
+            });
+            QList<int> data;
+            QStringList xnames;
+            std::tie(data, xnames) = result.get();
+            emit barChart(data, xnames, "Http状态码统计", g_pos);
+        }else if (date.indexIn(temp) != -1) {
+            qDebug() << temp;
+
+            QMap<QString, int> m;
+
+            for (const auto &val : colLog) {
+                ++m[val.mid(0, 11)];
+            }
+
+            QStringList xnames;
+            QList<int> data;
+
+            for (auto it = m.begin(); it != m.end(); ++it) {
+                data.append(it.value());
+    //            it.key().replace()
+                xnames.append(it.key());
+            }
+            qDebug() << data;
+            qDebug() << xnames;
+            emit lineChart(data, xnames, "最近访问数统计", g_pos);
+        }else if ([&colLog]() ->bool {
+    //        bool flag = false;
+            for (const auto &ele : colLog) {
+                if (ele.contains("Mozilla", Qt::CaseInsensitive))
+                    return true;
+            }
+             return false;
+        }()) {
+            qDebug() << "count user agent source";
+            QPair<QString, int> chrome{"Chrome", 0}, firefox{"Firefox", 0}, ie{"IE", 0},
+            safari{"Safari", 0}, opera{"Opera", 0}, others{"Others", 0};
+
+            for (const auto &ele : colLog) {
+                if (ele.contains("Chrome", Qt::CaseInsensitive)) {
+                    ++chrome.second;
+                }else if (ele.contains("Firefox", Qt::CaseInsensitive)) {
+                    ++firefox.second;
+                }else if (ele.contains("Opera", Qt::CaseInsensitive)) {
+                    ++opera.second;
+                }else if (ele.contains("MSIE", Qt::CaseInsensitive)) {
+                    ++ie.second;
+                }else if (ele.contains("SafaRi", Qt::CaseInsensitive)) {
+                    ++safari.second;
+                }else {
+                    ++others.second;
+                }
+            }
+            QVector<QPair<QString, int>> vec{chrome, firefox, ie,safari, opera, others};
+            std::sort(vec.begin(), vec.end(), [](const QPair<QString, int> &a, const QPair<QString, int> &b){return a.second > b.second;});
+
+
+            QStringList xnames;
+            QList<int> data;
+
+            auto num = vec.size();
+            qDebug() << vec;
+            for (auto i = 0; i < num; ++i) {
+                xnames.push_back(vec[i].first);
+                data.push_back(vec[i].second);
+            }
+            qDebug() << "will process browser";
+            emit barChart(data, xnames, "浏览器统计", g_pos);
         }
-        QVector<QPair<QString, int>> vec{chrome, firefox, ie,safari, opera, others};
-        std::sort(vec.begin(), vec.end(), [](const QPair<QString, int> &a, const QPair<QString, int> &b){return a.second > b.second;});
-
-
-        QStringList xnames;
-        QList<int> data;
-
-        auto num = vec.size();
-        qDebug() << vec;
-        for (auto i = 0; i < num; ++i) {
-            xnames.push_back(vec[i].first);
-            data.push_back(vec[i].second);
-        }
-        qDebug() << "will process browser";
-        emit barChart(data, xnames, "浏览器统计", g_pos);
-    }
+        qDebug() << "end this thread";
 }
 
 void DataReader::TwoDprocess(const OneColLog &log1, const OneColLog &log2, int g_pos)
 {
 //处理时间与HTTP Method的关系
+     auto result = pool.enqueue([=]()->std::tuple<QMap<int, int>, QMap<int, int>, QMap<int, int>, QMap<int, int>, QMap<int, int>, QMap<int, int>>{
 
     QMap<int, int> get, head, post, put, del, trace;
     auto len = log1.size();
@@ -257,13 +272,19 @@ void DataReader::TwoDprocess(const OneColLog &log1, const OneColLog &log2, int g
             ++trace[duration];
         }
     }
+    return std::make_tuple(get, head, post, put, del, trace);
+     });
     qDebug() << "httpMethodAndTImeChart";
+        QMap<int, int> get, head, post, put, del, trace;
+        std::tie(get, head, post, put, del, trace) = result.get();
     emit httpMethodAndTimeChart(get, head, post, put, del, trace);
 }
 
 void DataReader::processIpAndHttpRequest(const OneColLog &ip, const OneColLog &request)
 {
 //    QStringList names;
+
+     auto result = pool.enqueue([=]()->std::tuple<QMap<QString, QMap<QString, int>>>{
 
     QMap<QString, QMap<QString, int>> m;
 
@@ -301,14 +322,20 @@ void DataReader::processIpAndHttpRequest(const OneColLog &ip, const OneColLog &r
             ++m[ip.at(i)]["Trace"];
         }
     }
+        return std::make_tuple(m);
+     });
+         QMap<QString, QMap<QString, int>> m;
+         std::tie(m) = result.get();
     emit ipAndHttpReq(m);
 }
 
 void DataReader::processBrowserIpStatus(const OneColLog &browser, const OneColLog &ip,const OneColLog &status)
 {
-    QMap<QString, int> browser_cnt;
-    QMap<QString, QMap<QString, int>> ip_cnt;
-    QMap<QString, QMap<QString, QMap<QString, int>>> status_cnt;
+
+//    auto result = pool.enqueue([=]()->std::tuple<QMap<QString, int>, QMap<QString, QMap<QString, int>>, QMap<QString, QMap<QString, QMap<QString, int>>>>{
+    QHash<QString, int> browser_cnt;
+    QHash<QString, QHash<QString, int>> ip_cnt;
+    QHash<QString, QHash<QString, QHash<QString, int>>> status_cnt;
 
     auto len = browser.length();
 
@@ -343,13 +370,22 @@ void DataReader::processBrowserIpStatus(const OneColLog &browser, const OneColLo
             ++status_cnt[tr("Other")][tempIp][tempS];
         }
     }
-
+//    return std::make_tuple(browser_cnt, ip_cnt, status_cnt);
+//    });
     qDebug() << "go to draw complex pid chart";
+//    QMap<QString, int> browser_cnt;
+//    QMap<QString, QMap<QString, int>> ip_cnt;
+//    QMap<QString, QMap<QString, QMap<QString, int>>> status_cnt;
+
+//    std::tie(browser_cnt, ip_cnt, status_cnt) = result.get();
     emit browserIpStatus(browser_cnt, ip_cnt, status_cnt);
 }
 
 void DataReader::processIpAndOs(const OneColLog &ip, const OneColLog &userAgent)
 {
+
+    qDebug() << "start using pool";
+    auto result = pool.enqueue([=]()->std::tuple<QMap<QString, int>, QMap<QString, int>, QStringList>{
     int len = ip.size();
     QMap<QString, QMap<QString, bool> > exitIp;
     QMap<QString, int> visitors;
@@ -410,7 +446,16 @@ void DataReader::processIpAndOs(const OneColLog &ip, const OneColLog &userAgent)
     QStringList head;
     head << "Windows" << "Linux" << "Android" << "Macintosh" << "Ios" << "Unknown";
     qDebug() << "please draw ip and os";
+    return std::make_tuple(visitors, hits, head);
+    });
+    QStringList head;
+    QMap<QString, int> visitors;
+    QMap<QString, int> hits;
+    std::tie(visitors, hits, head) = result.get();
+    qDebug() << "visitors " << visitors.size();
+    qDebug() << "hits " << hits.size();
     emit ipAndOs(visitors, hits, head);
+    qDebug() << "end using pool";
 }
 
 

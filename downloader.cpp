@@ -12,21 +12,22 @@ Downloader::Downloader(QObject *parent) :
 {
 
     const int msec = 5e3;
-    QThread *downThread= new QThread;
+    downThread= new QThread;
     timer->moveToThread(downThread);
     timer->setInterval(msec);
     connect(downThread, SIGNAL(started()), timer, SLOT(start()));
     connect(timer, SIGNAL(timeout()), this, SLOT(download()), Qt::DirectConnection);
-    downThread->start();
+//    downThread->start();
 
 
 }
 
 void Downloader::work()
 {
-    const int msec = 5e3;
-    timer->start(msec);
-    qDebug() << "work in " << QThread::currentThreadId();
+//    const int msec = 5e3;
+//    timer->start(msec);
+//    qDebug() << "work in " << QThread::currentThreadId();
+    downThread->start();
 }
 
 Downloader::~Downloader()

@@ -6,7 +6,7 @@
 
 QT       += core gui
 QT       += charts
-
+QT       += sql
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = LogV
@@ -32,21 +32,31 @@ SOURCES += \
     logdataviewer.cpp \
     downloader.cpp \
     datareader.cpp \
-    visualcenter.cpp
+    visualcenter.cpp \
+    loginwindow.cpp \
+    registerwindow.cpp \
+    dao.cpp \
+    worker.cpp
 
 HEADERS += \
         mainwindow.h \
     customtabstyle.h \
     logdataviewer.h \
     downloader.h \
-    datareader.h \
     own.h \
-    visualcenter.h
+    visualcenter.h \
+    loginwindow.h \
+    registerwindow.h \
+    dao.h \
+    threadpool.h \
+    datareader.h \
+    worker.h
 
 FORMS += \
         mainwindow.ui \
-    logvisualwidget.ui \
     logdataviewer.ui \
-    visualcenter.ui
+    visualcenter.ui \
+    loginwindow.ui \
+    registerwindow.ui
 INCLUDEPATH += -I /usr/include/python2.7/
 LIBS += -L /usr/lib/python2.7 -lpython2.7

@@ -2,6 +2,7 @@
 #define DATAREADER_H
 
 #include "own.h"
+#include "threadpool.h"
 
 #include <QObject>
 
@@ -9,7 +10,7 @@ class DataReader : public QObject
 {
     Q_OBJECT
 public:
-    explicit DataReader(QObject *parent = nullptr);
+    explicit DataReader(int numThread = 10, QObject *parent = nullptr);
 
 
     void initData();
@@ -26,7 +27,7 @@ signals:
                            QMap<int, int> del, QMap<int, int> trace);
     void ipAndHttpReq(QMap<QString, QMap<QString, int>> store);
 
-    void browserIpStatus(QMap<QString, int>, QMap<QString, QMap<QString, int>>,  QMap<QString, QMap<QString, QMap<QString, int>>>);
+    void browserIpStatus(QHash<QString, int>, QHash<QString, QHash<QString, int>>,  QHash<QString, QHash<QString, QHash<QString, int>>>);
 
     void ipAndOs(QMap<QString, int> visitors, QMap<QString, int> hits, QStringList head);
 public slots:
@@ -57,6 +58,7 @@ private:
 //    int graphNum;
     QString dataPath;
     char delimiter;
+    ThreadPool pool;
 };
 
 #endif // DATAREADER_H
